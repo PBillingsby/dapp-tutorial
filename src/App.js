@@ -15,6 +15,7 @@ function App() {
   }
 
   async function fetchGreeting() {
+    console.log(process.env.RINKEBY_WALLET_KEY)
     // READ: Calls contract and reads current greeting
     if (isWindowEthereum) {
       const provider = new ethers.providers.Web3Provider(window.ethereum)
