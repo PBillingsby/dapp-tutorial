@@ -1,6 +1,7 @@
 import './App.css';
 import { useState } from 'react';
 import { ethers } from 'ethers'
+// Contract imported from ABI generated json
 import Greeter from './artifacts/contracts/Greeter.sol/Greeter.json'
 
 const greeterAddress = "0x5fbdb2315678afecb367f032d93f642f64180aa3"
@@ -9,23 +10,35 @@ function App() {
   const [greeting, setGreetingValue] = useState()
   const isWindowEthereum = window.ethereum !== 'undefined'
   // Requests metamask account when setGreeting triggered
-  async function requestAccounts() {
+  async function requestAccount() {
     await window.ethereum.request({ method: 'eth_requestAccounts' })
   }
 
   async function fetchGreeting() {
     // READ: Calls contract and reads current greeting
-    if (!greeting) return
     if (isWindowEthereum) {
       const provider = new ethers.providers.Web3Provider(window.ethereum)
-      const contract = 
+      const contract = new ethers.Contract(greeterAddress, Greeter.abi, provider)
+      try {
+        const data = await contract.greet()
+        console.log('data: ', data)
+      }
+      catch (err) { console.log('err: ', err) }
     }
   }
 
   async function setGreeting() {
     // WRITE: Calls contract and sends update
 
-    if (isWindowEthereum) { }
+    if (isWindowEthereum) {
+      await requestAccount()
+      const provider = new ethers.providers.Web3Provider(window.ethereum);
+      const signer = provider.getSigner()
+      const contract = new ethers.Contract(greeterAddress, Greeter.abi, signer)
+      const transaction = await contract.setGreeting(greeting)
+      await transaction.wait()
+      fetchGreeting()
+    }
   }
   return (
     <div className="App">
